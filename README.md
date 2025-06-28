@@ -25,6 +25,7 @@ This project is to enter a raffle to win a cute dog NFT. The protocol should do 
   - [Compatibilities](#compatibilities)
 - [Roles](#roles)
 - [Known Issues](#known-issues)
+    - [Reports](#reports)
 
 # Getting Started
 
@@ -92,3 +93,23 @@ Player - Participant of the raffle, has the power to enter the raffle with the `
 # Known Issues
 
 None
+
+### Reports
+
+**cloc:**
+
+```bash
+cloc  ./src/PuppyRaffle.sol > cloc.md
+```
+
+**solidity metrics:**
+
+```bash
+olidity-code-metrics ./src/PuppyRaffle.sol > metrics.md
+```
+
+**aderyn:**
+
+```bash
+aderyn .
+```
