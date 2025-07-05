@@ -139,12 +139,19 @@ contract PuppyRaffle is ERC721, Ownable {
         require(players.length >= 4, "PuppyRaffle: Need at least 4 players");
 
         // @audit randomness
+        // fixes: Chainlink VRF, Commit Reveal Scheme
         uint256 winnerIndex =
             uint256(keccak256(abi.encodePacked(msg.sender, block.timestamp, block.difficulty))) % players.length;
         address winner = players[winnerIndex];
+        // q why not just do address(this).balance?
         uint256 totalAmountCollected = players.length * entranceFee;
+        // q is the 80% correct?
+        // q I bet there is an arithmetic error here
         uint256 prizePool = (totalAmountCollected * 80) / 100;
         uint256 fee = (totalAmountCollected * 20) / 100;
+        // e this is the total fees the owner should be able to collect
+        // @audit overflow
+        // Fixes: Never version of Solidity, bigger uints
         totalFees = totalFees + uint64(fee);
 
         uint256 tokenId = totalSupply();
