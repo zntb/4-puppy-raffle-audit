@@ -152,11 +152,22 @@ contract PuppyRaffle is ERC721, Ownable {
         // e this is the total fees the owner should be able to collect
         // @audit overflow
         // Fixes: Never version of Solidity, bigger uints
+
+        // 18.446744073709551615
+        // 20.000000000000000000 uint256
+        // 1.553255926290448384
+        // @audit unsafe cast of uint256 to uint64
         totalFees = totalFees + uint64(fee);
 
+        // e when we mint a new puppy NFT, we use the totalSupply as the tokenId
+        // q where do we increment the tokenId/totalSupply?
         uint256 tokenId = totalSupply();
 
         // We use a different RNG calculate from the winnerIndex to determine rarity
+        // @audit randomness
+
+        // q if our transaction picks a winner and we don't like it... Revert?
+        // q gas war... // @followup
         uint256 rarity = uint256(keccak256(abi.encodePacked(msg.sender, block.difficulty))) % 100;
         if (rarity <= COMMON_RARITY) {
             tokenIdToRarity[tokenId] = COMMON_RARITY;
@@ -166,19 +177,26 @@ contract PuppyRaffle is ERC721, Ownable {
             tokenIdToRarity[tokenId] = LEGENDARY_RARITY;
         }
 
-        delete players;
-        raffleStartTime = block.timestamp;
-        previousWinner = winner;
-        (bool success,) = winner.call{value: prizePool}("");
+        delete players; // e resetting the players array
+        raffleStartTime = block.timestamp; // e resetting the raffle start time
+        previousWinner = winner; // e vanity, doesn't matter much
+
+        // q can we reenter somewhere else?
+        // q what if the winner is a smart contract with a fallback, that will fail?
+        // @audit the winner wouldn't get the money if their fallback was messed up!        (bool success,) = winner.call{value: prizePool}("");
         require(success, "PuppyRaffle: Failed to send prize pool to winner");
         _safeMint(winner, tokenId);
     }
 
     /// @notice this function will withdraw the fees to the feeAddress
     function withdrawFees() external {
+        // q ...?
+        // q ok so, if the protocolhas players, someone can't withdraw the fees?
+        // @audit is it difficult to withdraw the fees?
         require(address(this).balance == uint256(totalFees), "PuppyRaffle: There are currently players active!");
         uint256 feesToWithdraw = totalFees;
         totalFees = 0;
+        // q what if the feeAddress is a smart contract with a fallback, that will fail?
         (bool success,) = feeAddress.call{value: feesToWithdraw}("");
         require(success, "PuppyRaffle: Failed to withdraw fees");
     }
