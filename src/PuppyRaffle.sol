@@ -183,7 +183,8 @@ contract PuppyRaffle is ERC721, Ownable {
 
         // q can we reenter somewhere else?
         // q what if the winner is a smart contract with a fallback, that will fail?
-        // @audit the winner wouldn't get the money if their fallback was messed up!        (bool success,) = winner.call{value: prizePool}("");
+        // @audit the winner wouldn't get the money if their fallback was messed up!
+        (bool success,) = winner.call{value: prizePool}("");
         require(success, "PuppyRaffle: Failed to send prize pool to winner");
         _safeMint(winner, tokenId);
     }
